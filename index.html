@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mercado Flash</title>
+<style>
+  :root{
+    --pitch-dark:#0b2e1f;
+    --pitch:#123b28;
+    --line:#e8f5ec;
+    --gold:#e8b649;
+    --gold-dim:#a9822f;
+    --paper:#f4f1e6;
+    --ink:#0b2e1f;
+    --danger:#c1502e;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    min-height:100vh;
+    background:
+      repeating-linear-gradient(0deg, var(--pitch) 0 80px, var(--pitch-dark) 80px 160px);
+    font-family: 'Georgia', 'Iowan Old Style', serif;
+    color: var(--line);
+    padding: 24px 16px 60px;
+  }
+  .wrap{ max-width: 640px; margin: 0 auto; }
+  header{ text-align:center; margin-bottom: 28px; }
+  .eyebrow{
+    letter-spacing: 0.3em;
+    font-size: 11px;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    margin-bottom: 8px;
+  }
+  h1{
+    font-size: 40px;
+    margin: 0;
+    line-height: 1.05;
+    text-shadow: 0 2px 0 rgba(0,0,0,0.3);
+  }
+  h1 span{ color: var(--gold); }
+  .sub{
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    color: rgba(232,245,236,0.65);
+    font-size: 14px;
+    margin-top: 10px;
+  }
+
+  .card{
+    background: var(--paper);
+    color: var(--ink);
+    border-radius: 10px;
+    padding: 22px;
+    margin-bottom: 18px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+  }
+  .card h2{
+    font-size: 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 0 0 14px;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 8px;
+  }
+  label{
+    display:block;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 10px 0 4px;
+    color: #444;
+  }
+  input, select{
+    width:100%;
+    padding: 10px 12px;
+    border: 1px solid #ccc4a8;
+    border-radius: 6px;
+    font-size: 15px;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    background: #fff;
+  }
+  button{
+    width:100%;
+    margin-top: 18px;
+    padding: 14px;
+    border: none;
+    border-radius: 6px;
+    background: var(--ink);
+    color: var(--paper);
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-weight:600;
+    font-size: 14px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    cursor:pointer;
+  }
+  button:disabled{ opacity:0.5; cursor:not-allowed; }
+  button.secondary{
+    background: transparent;
+    color: var(--ink);
+    border: 1px solid var(--ink);
+  }
+  .hint{
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 12px;
+    color: #666;
+    margin-top: 6px;
+  }
+  .status{
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 13px;
+    margin-top: 12px;
+    color: var(--danger);
+  }
+
+  /* --- Sobre / reveal --- */
+  .pack-zone{ text-align:center; padding: 30px 0; }
+  .envelope{
+    width: 140px; height: 100px; margin: 0 auto 18px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-dim));
+    border-radius: 8px;
+    position: relative;
+    cursor: pointer;
+    transition: transform .2s ease;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+  }
+  .envelope:hover{ transform: translateY(-4px) scale(1.02); }
+  .envelope::after{
+    content: "⚡";
+    position:absolute; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    font-size: 34px;
+  }
+  .players{
+    display:grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-top: 10px;
+  }
+  .player{
+    background: var(--paper);
+    color: var(--ink);
+    border-radius: 8px;
+    padding: 16px;
+    display:flex;
+    justify-content: space-between;
+    align-items:center;
+    opacity:0;
+    transform: translateY(10px);
+    animation: reveal 0.5s ease forwards;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+  }
+  .player + .player{ animation-delay: 0.15s; }
+  .player:nth-child(3){ animation-delay: 0.3s; }
+  .player:nth-child(4){ animation-delay: 0.45s; }
+  .player:nth-child(5){ animation-delay: 0.6s; }
+  @keyframes reveal{
+    to{ opacity:1; transform: translateY(0); }
+  }
+  .player-name{ font-size: 17px; font-weight:bold; }
+  .player-team{
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 12px; color:#555;
+  }
+  .price-block{ text-align:right; }
+  .price-new{ font-size: 18px; font-weight:bold; color: var(--danger); font-family:'Helvetica Neue',Arial,sans-serif;}
+  .price-old{
+    font-size: 12px; color:#888; text-decoration: line-through;
+    font-family:'Helvetica Neue',Arial,sans-serif;
+  }
+  .markup{
+    font-family:'Helvetica Neue',Arial,sans-serif;
+    font-size: 10px;
+    background: var(--danger);
+    color: #fff;
+    padding: 2px 6px;
+    border-radius: 4px;
+    display:inline-block;
+    margin-top: 4px;
+  }
+  footer{
+    text-align:center;
+    font-family:'Helvetica Neue',Arial,sans-serif;
+    font-size: 11px;
+    color: rgba(232,245,236,0.4);
+    margin-top: 30px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Viernes de reposición</div>
+    <h1>Mercado <span>Flash</span></h1>
+    <div class="sub">Unos pocos jugadores libres, con sobreprecio, para quien se quedó corto el jueves.</div>
+  </header>
+
+  <!-- PASO 1: LOGIN ADMIN -->
+  <div class="card" id="loginCard">
+    <h2>Paso 1 · Acceso admin</h2>
+    <label>Email de Biwenger</label>
+    <input type="email" id="email" placeholder="tu@email.com" />
+    <label>Contraseña</label>
+    <input type="password" id="password" />
+    <label>ID de tu liga</label>
+    <input type="text" id="leagueId" placeholder="p.ej. 123456" />
+    <div class="hint">Lo sacas de la URL cuando estás dentro de tu liga en biwenger.com: .../league/&lt;ESTE NÚMERO&gt;</div>
+    <button id="loginBtn">Entrar</button>
+    <div class="status" id="loginStatus"></div>
+  </div>
+
+  <!-- PASO 2: CONFIG SORTEO -->
+  <div class="card" id="configCard" style="display:none;">
+    <h2>Paso 2 · Configura el sorteo</h2>
+    <label>Nº de jugadores a sacar</label>
+    <input type="number" id="numPlayers" value="4" min="1" max="10" />
+    <label>Sobreprecio (%)</label>
+    <input type="number" id="markup" value="20" min="0" max="100" />
+    <button id="loadDataBtn">Cargar plantillas de la liga</button>
+    <div class="status" id="configStatus"></div>
+  </div>
+
+  <!-- PASO 3: ABRIR SOBRE -->
+  <div class="card pack-zone" id="packCard" style="display:none;">
+    <h2 style="border:none;">Paso 3 · Generar mercado</h2>
+    <div class="envelope" id="envelope"></div>
+    <div class="hint">Toca el sobre para revelar los jugadores de esta semana</div>
+    <div class="players" id="playersResult"></div>
+    <button class="secondary" id="reshuffleBtn" style="display:none;">Volver a sortear</button>
+  </div>
+
+</div>
+<footer>Herramienta no oficial · no afiliada a Biwenger</footer>
+
+<script>
+let state = {
+  token: null, userId: null, version: '644', leagueId: null,
+  allPlayers: [], ownedIds: new Set()
+};
+
+document.getElementById('loginBtn').onclick = async () => {
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const leagueId = document.getElementById('leagueId').value.trim();
+  const statusEl = document.getElementById('loginStatus');
+  if(!email || !password || !leagueId){ statusEl.textContent = 'Rellena los tres campos.'; return; }
+
+  statusEl.textContent = 'Conectando con Biwenger...';
+  try{
+    const r = await fetch('/api/login', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({email, password})
+    });
+    const data = await r.json();
+    if(!r.ok){ statusEl.textContent = 'No se pudo entrar. Revisa email/contraseña.'; console.error(data); return; }
+
+    // El token puede venir en distintos formatos según la respuesta de Biwenger.
+    state.token = data.token || (data.login && data.login.token) || data.login;
+    state.userId = data.id || (data.login && data.login.id) || '';
+    state.leagueId = leagueId;
+
+    if(!state.token){
+      statusEl.textContent = 'Login OK pero no encuentro el token en la respuesta (mira la consola).';
+      console.log('Respuesta login:', data);
+      return;
+    }
+
+    statusEl.textContent = '¡Conectado!';
+    document.getElementById('configCard').style.display = 'block';
+  }catch(e){
+    statusEl.textContent = 'Error de conexión.';
+    console.error(e);
+  }
+};
+
+document.getElementById('loadDataBtn').onclick = async () => {
+  const statusEl = document.getElementById('configStatus');
+  statusEl.textContent = 'Descargando jugadores de LaLiga...';
+  try{
+    const playersRes = await fetch('/api/players');
+    const playersData = await playersRes.json();
+    // La forma exacta de este JSON puede variar; probamos las rutas más comunes.
+    const rawPlayers = (playersData.data && playersData.data.players) || playersData.players || {};
+    state.allPlayers = Object.values(rawPlayers);
+
+    statusEl.textContent = `Descargando plantillas de tu liga (${state.allPlayers.length} jugadores en LaLiga)...`;
+
+    const leagueRes = await fetch(`/api/league?token=${state.token}&leagueId=${state.leagueId}&userId=${state.userId}&version=${state.version}`);
+    const leagueData = await leagueRes.json();
+    const users = (leagueData.users) || (leagueData.data && leagueData.data.users) || [];
+
+    state.ownedIds = new Set();
+    for(const u of users){
+      try{
+        const rosterRes = await fetch(`/api/roster?token=${state.token}&leagueId=${state.leagueId}&userId=${state.userId}&version=${state.version}&targetUserId=${u.id}`);
+        const rosterData = await rosterRes.json();
+        const players = rosterData.players || (rosterData.data && rosterData.data.players) || [];
+        players.forEach(p => state.ownedIds.add(p.id));
+      }catch(e){ console.warn('No se pudo leer plantilla de', u.name, e); }
+    }
+
+    statusEl.textContent = `Listo. ${state.ownedIds.size} jugadores ya pillados, ${state.allPlayers.length - state.ownedIds.size} libres.`;
+    document.getElementById('packCard').style.display = 'block';
+  }catch(e){
+    statusEl.textContent = 'Error cargando datos (mira la consola).';
+    console.error(e);
+  }
+};
+
+function generateFlashMarket(){
+  const n = parseInt(document.getElementById('numPlayers').value, 10) || 4;
+  const markupPct = parseInt(document.getElementById('markup').value, 10) || 20;
+
+  const free = state.allPlayers.filter(p => p.id && !state.ownedIds.has(p.id) && p.price);
+  const shuffled = free.sort(() => Math.random() - 0.5).slice(0, n);
+
+  const container = document.getElementById('playersResult');
+  container.innerHTML = '';
+  shuffled.forEach(p => {
+    const newPrice = Math.round(p.price * (1 + markupPct/100));
+    const el = document.createElement('div');
+    el.className = 'player';
+    el.innerHTML = `
+      <div>
+        <div class="player-name">${p.name}</div>
+        <div class="player-team">${(p.teamID && p.teamID.name) || ''}</div>
+      </div>
+      <div class="price-block">
+        <div class="price-old">${p.price.toLocaleString('es-ES')} €</div>
+        <div class="price-new">${newPrice.toLocaleString('es-ES')} €</div>
+        <div class="markup">+${markupPct}%</div>
+      </div>
+    `;
+    container.appendChild(el);
+  });
+  document.getElementById('reshuffleBtn').style.display = 'block';
+}
+
+document.getElementById('envelope').onclick = generateFlashMarket;
+document.getElementById('reshuffleBtn').onclick = generateFlashMarket;
+</script>
+</body>
+</html>
